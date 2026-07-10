@@ -194,12 +194,21 @@ const Dashboard = () => {
                       ["Missing price", transformed.summary.missingPriceWarnings],
                       ["Missing image", transformed.summary.missingImageWarnings],
                       ["Low-ticket", transformed.summary.lowTicketWarnings],
+                      ["Handle cleanup", transformed.summary.handleCleanupWarnings],
                     ].map(([label, value]) => <div key={label} className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="text-lg font-bold">{value}</p></div>)}
                   </div>
                   <div className="overflow-auto rounded-lg border">
                     <Table>
                       <TableHeader><TableRow>{shopifyTemplate.headers.slice(0, 8).map((header) => <TableHead key={header}>{header}</TableHead>)}</TableRow></TableHeader>
                       <TableBody>{transformed.shopifyRows.slice(0, 10).map((row, index) => <TableRow key={`${row.Handle ?? "shopify-row"}-${index}`}>{shopifyTemplate.headers.slice(0, 8).map((header) => <TableCell key={header} className="max-w-[180px] truncate">{row[header]}</TableCell>)}</TableRow>)}</TableBody>
+                    </Table>
+                  </div>
+                  <div className="overflow-auto rounded-lg border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow><TableHead>Row</TableHead><TableHead>Title</TableHead><TableHead>Status</TableHead><TableHead>Reason</TableHead><TableHead>Notes</TableHead></TableRow>
+                      </TableHeader>
+                      <TableBody>{transformed.reviewRows.slice(0, 10).map((row) => <TableRow key={row["original row number"]}><TableCell>{row["original row number"]}</TableCell><TableCell className="max-w-[180px] truncate">{row["original title"]}</TableCell><TableCell>{row["included/excluded"]}</TableCell><TableCell>{row["exclusion reason"]}</TableCell><TableCell className="max-w-[260px] truncate">{row["notes/assumptions"]}</TableCell></TableRow>)}</TableBody>
                     </Table>
                   </div>
                   <div className="flex flex-wrap gap-3">

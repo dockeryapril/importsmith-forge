@@ -157,6 +157,7 @@ const setFirstExisting = (row: CsvRow, headers: string[], candidates: string[], 
 };
 
 const keywordMatch = (haystack: string, keywords: string[]) => keywords.some((keyword) => keyword.trim() && haystack.includes(keyword.trim().toLowerCase()));
+const hasHandleCleanupWarning = (title: string, handle: string) => Boolean(title) && (handle === "untitled-product" || /[^a-zA-Z0-9\s&-]/.test(title) || /\s{2,}/.test(title) || handle.length < 3);
 
 export const transformProducts = ({ supplierRows, supplierName, shopifyHeaders, mappings, rules }: TransformInput) => {
   const shopifyRows: CsvRow[] = [];
@@ -185,6 +186,7 @@ export const transformProducts = ({ supplierRows, supplierName, shopifyHeaders, 
     const missingPrice = cost <= 0;
     const missingImage = imageUrls.length === 0;
     const lowTicket = finalPrice > 0 && finalPrice < rules.lowTicketThreshold;
+    const handleCleanupWarning = hasHandleCleanupWarning(title, handle);
 
     if (included) {
       const imageRows = rules.preserveExtraImages ? Math.max(1, imageUrls.length) : 1;
@@ -236,7 +238,10 @@ export const transformProducts = ({ supplierRows, supplierName, shopifyHeaders, 
       "missing image warning": missingImage ? "TRUE" : "FALSE",
       "low-ticket warning": lowTicket ? "TRUE" : "FALSE",
       "MAP warning placeholder": "FALSE",
-      "notes/assumptions": mappedVendor ? "Vendor mapped from supplier CSV." : "Vendor defaulted to uploaded supplier/vendor name.",
+      "notes/assumptions": [
+        mappedVendor ? "Vendor mapped from supplier CSV." : "Vendor defaulted to uploaded supplier/vendor name.",
+        handleCleanupWarning ? "Handle was cleaned from unusual title characters/spacing; review generated URL handle." : "",
+      ].filter(Boolean).join(" "),
     });
   });
 
@@ -253,6 +258,7 @@ export const transformProducts = ({ supplierRows, supplierName, shopifyHeaders, 
       missingPriceWarnings: count("missing price warning"),
       missingImageWarnings: count("missing image warning"),
       lowTicketWarnings: count("low-ticket warning"),
+      handleCleanupWarnings: reviewRows.filter((row) => row["notes/assumptions"].includes("Handle was cleaned")).length,
     },
   };
 };
