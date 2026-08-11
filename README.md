@@ -2,7 +2,9 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**Published app**: https://importsmith-forge.lovable.app
+
+**GitHub repository**: https://github.com/dockeryapril/importsmith-forge
 
 ## How can I edit this code?
 
@@ -10,7 +12,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Open the ImportSmith Forge project from your Lovable workspace and start prompting. The editor URL is workspace-specific and should be added here once its project ID has been confirmed.
 
 Changes made via Lovable will be committed automatically to this repo.
 
