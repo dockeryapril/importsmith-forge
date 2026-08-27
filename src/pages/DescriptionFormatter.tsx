@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   emptyDescriptionSections,
@@ -28,7 +29,9 @@ const DescriptionFormatter = () => {
   const hasOutput = Boolean(
     sections.description.trim()
     || sections.keyFeatures.some((feature) => feature.trim())
-    || sections.specifications.some((specification) => specification.trim()),
+    || sections.specifications.some((specification) => specification.trim())
+    || sections.shipping.trim() || sections.assembly.trim() || sections.installationNotes.trim()
+    || sections.suggestedSections.some((item) => item.content.trim()),
   );
 
   const copy = async (value: string, target: Exclude<CopyTarget, null>) => {
@@ -49,7 +52,7 @@ const DescriptionFormatter = () => {
         <Badge variant="secondary" className="mb-3">Consistent product content</Badge>
         <h1 className="text-3xl font-bold">Shopify Description Formatter</h1>
         <p className="mt-2 max-w-3xl text-muted-foreground">
-          Paste vendor copy once, then convert it into the same Description, Key Features, and Specifications structure for every product.
+          Paste vendor copy once, then convert it into the same product-content structure for every product.
           The formatter cleans spacing and bullets without rewriting claims or inventing details.
         </p>
       </div>
@@ -74,7 +77,7 @@ const DescriptionFormatter = () => {
               </Button>
             </div>
             <p className="rounded-lg bg-smith-surface p-3 text-xs text-muted-foreground">
-              Recognized headings include Description, Overview, Features, Highlights, Specifications, Specs, and Details. Review measurements and product claims before publishing.
+              Known sections are formatted automatically. Unfamiliar vendor headings appear as suggested tabs so you can keep, rename, or remove them. Review measurements and product claims before publishing.
             </p>
           </CardContent>
         </Card>
@@ -84,9 +87,29 @@ const DescriptionFormatter = () => {
             <CardHeader><CardTitle className="text-base">2. Review and make minimal corrections</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
+                <Label htmlFor="product-title">PRODUCT TITLE <span className="font-normal text-muted-foreground">(preview and package only—not copied into description HTML)</span></Label>
+                <Input id="product-title" className="mt-1" value={sections.productTitle} onChange={(event) => setSections((current) => ({ ...current, productTitle: event.target.value }))} />
+              </div>
+              <div>
                 <Label htmlFor="formatted-description">DESCRIPTION</Label>
                 <Textarea id="formatted-description" className="mt-1 min-h-[150px]" value={sections.description} onChange={(event) => setSections((current) => ({ ...current, description: event.target.value }))} />
               </div>
+              {(["shipping", "assembly", "installationNotes"] as const).map((key) => (
+                <div key={key}>
+                  <Label htmlFor={`formatted-${key}`}>{key === "installationNotes" ? "INSTALLATION NOTES" : key.toUpperCase()}</Label>
+                  <Textarea id={`formatted-${key}`} className="mt-1 min-h-[110px]" value={sections[key]} onChange={(event) => setSections((current) => ({ ...current, [key]: event.target.value }))} />
+                </div>
+              ))}
+              {sections.suggestedSections.map((item, index) => (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-3" key={item.id}>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <Badge variant="outline" className="border-amber-500 text-amber-800">SUGGESTED TAB</Badge>
+                    <Button size="sm" variant="ghost" onClick={() => setSections((current) => ({ ...current, suggestedSections: current.suggestedSections.filter((section) => section.id !== item.id) }))}>Remove</Button>
+                  </div>
+                  <Input aria-label={`Suggested tab ${index + 1} title`} className="mb-2 font-semibold uppercase" value={item.title} onChange={(event) => setSections((current) => ({ ...current, suggestedSections: current.suggestedSections.map((section) => section.id === item.id ? { ...section, title: event.target.value.toUpperCase() } : section) }))} />
+                  <Textarea aria-label={`Suggested tab ${index + 1} content`} className="min-h-[110px]" value={item.content} onChange={(event) => setSections((current) => ({ ...current, suggestedSections: current.suggestedSections.map((section) => section.id === item.id ? { ...section, content: event.target.value } : section) }))} />
+                </div>
+              ))}
               <div>
                 <Label htmlFor="formatted-features">KEY FEATURES <span className="font-normal text-muted-foreground">(one per line)</span></Label>
                 <Textarea id="formatted-features" className="mt-1 min-h-[180px]" value={linesToText(sections.keyFeatures)} onChange={(event) => setSections((current) => ({ ...current, keyFeatures: textToLines(event.target.value) }))} />
@@ -101,6 +124,7 @@ const DescriptionFormatter = () => {
           <Card className="border shadow-sm">
             <CardHeader><CardTitle className="text-base">3. Copy for Shopify</CardTitle></CardHeader>
             <CardContent className="space-y-4">
+              {sections.productTitle.trim() && <h2 className="text-xl font-semibold">{sections.productTitle}</h2>}
               <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-lg border bg-smith-surface p-4 text-xs">{hasOutput ? formattedText : "Your standardized description will appear here."}</pre>
               <div className="flex flex-wrap gap-3">
                 <Button className="gap-2" disabled={!hasOutput} onClick={() => copy(formattedText, "text")}>

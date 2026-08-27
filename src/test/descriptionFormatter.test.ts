@@ -32,7 +32,7 @@ describe("Shopify description formatter", () => {
 
   it("recognizes common vendor heading aliases and infers bullets and specifications", () => {
     const parsed = parseVendorDescription(`Overview\nA sturdy outdoor structure.\nHighlights\n- Adjustable louvers\nSpecs\nMaterial: Metal`);
-    expect(parsed).toEqual({
+    expect(parsed).toMatchObject({
       description: "A sturdy outdoor structure.",
       keyFeatures: ["Adjustable louvers"],
       specifications: ["Material: Metal"],
@@ -40,15 +40,24 @@ describe("Shopify description formatter", () => {
   });
 
   it("outputs the required plain-text headings and Shopify-safe HTML", () => {
-    const parsed = parseVendorDescription(`${vendorCopy}\nInstallation Notes: Use <level> ground & anchors`);
+    const parsed = parseVendorDescription(`${vendorCopy}\nINSTALLATION NOTES\nUse <level> ground & anchors`);
+    parsed.productTitle = "Pergola title outside copied HTML";
     const text = formatDescriptionText(parsed);
     const html = formatDescriptionHtml(parsed);
 
     expect(text).toContain("DESCRIPTION\n\nEnjoy evenings outdoors");
     expect(text).toContain("KEY FEATURES\n\nBuilt-in solar LED");
     expect(text).toContain("SPECIFICATIONS\n\nColor: Brown");
-    expect(html).toContain("<h2>DESCRIPTION</h2>");
+    expect(html).toContain("<h6>DESCRIPTION</h6><p>");
     expect(html).toContain("<ul><li>Built-in solar LED");
-    expect(html).toContain("<strong>Installation Notes:</strong> Use &lt;level&gt; ground &amp; anchors");
+    expect(html).toContain("<h6>INSTALLATION NOTES</h6><p>Use &lt;level&gt; ground &amp; anchors</p>");
+    expect(html).not.toContain(parsed.productTitle);
+  });
+
+  it("keeps unknown vendor headings as suggested tabs and renders empty sections", () => {
+    const parsed = parseVendorDescription("DESCRIPTION\nA shed.\n\nPACKAGE SIZE\n83.5 x 29 x 16.5 in");
+    expect(parsed.suggestedSections).toEqual([{ id: "suggested-1", title: "PACKAGE SIZE", content: "83.5 x 29 x 16.5 in" }]);
+    expect(formatDescriptionHtml(parsed)).toContain("<h6>SHIPPING</h6><p>No current info.</p>");
+    expect(formatDescriptionHtml(parsed)).toContain("<h6>PACKAGE SIZE</h6>");
   });
 });

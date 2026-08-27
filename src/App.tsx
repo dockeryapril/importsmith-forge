@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import DescriptionFormatter from "./pages/DescriptionFormatter";
+import ProductPackageBuilder from "./pages/ProductPackageBuilder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/history" element={<History />} />
             <Route path="/description-formatter" element={<DescriptionFormatter />} />
+            <Route path="/product-package-builder" element={<ProductPackageBuilder />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

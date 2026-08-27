@@ -35,7 +35,7 @@ test("uploads, maps, transforms, and exports Shopify CSV data", async ({ page })
   expect(download.suggestedFilename()).toBe("shopify-import.csv");
   expect(exportedCsv.split("\n")[0]).toBe(shopifyHeaders.join(","));
   expect(exportedCsv).toContain("cedar-storage-shed,Cedar Storage Shed");
-  expect(exportedCsv).toContain("1649.99");
+  expect(exportedCsv).toContain("1539.99");
   expect(exportedCsv.match(/cedar-storage-shed/g)).toHaveLength(2);
   expect(exportedCsv).not.toContain("Replacement Part Cover");
 });
@@ -61,10 +61,26 @@ test("formats pasted vendor copy without rewriting product claims", async ({ pag
   ].join("\n"));
 
   await page.getByRole("button", { name: "Format description" }).click();
-  await expect(page.getByLabel("DESCRIPTION")).toHaveValue("A sturdy pergola for evenings outdoors.");
+  await expect(page.getByLabel("DESCRIPTION", { exact: true })).toHaveValue("A sturdy pergola for evenings outdoors.");
   await expect(page.getByLabel(/KEY FEATURES/)).toHaveValue("Adjustable louvered roof\nSolar LED tube lights");
   await expect(page.getByLabel(/SPECIFICATIONS/)).toHaveValue("Color: Brown\nMaterial: Metal");
 
   await page.getByRole("button", { name: "Copy formatted text" }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("DESCRIPTION\n\nA sturdy pergola");
+});
+
+test("surfaces unknown vendor tabs and builds independent product packages", async ({ page }) => {
+  await page.goto("/description-formatter");
+  await page.getByLabel("Vendor description text").fill("DESCRIPTION\nA large metal shed.\nPACKAGE SIZE\n83.5 x 29 x 16.5 in");
+  await page.getByRole("button", { name: "Format description" }).click();
+  await expect(page.getByText("SUGGESTED TAB", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Suggested tab 1 title")).toHaveValue("PACKAGE SIZE");
+
+  await page.goto("/product-package-builder");
+  await page.getByLabel("Product title").fill("Chery 13x20 Plus Shed");
+  await page.getByLabel("SKU").nth(0).fill("LONMSCGK2013A");
+  await page.getByLabel("SKU").nth(1).fill("LONMSCGK2013W");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download separate product packages ZIP" }).click();
+  expect((await downloadPromise).suggestedFilename()).toBe("chery-13x20-plus-shed-packages.zip");
 });

@@ -28,6 +28,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <Link to="/description-formatter">
               <Button variant={pathname === "/description-formatter" ? "secondary" : "ghost"} size="sm">Description Formatter</Button>
             </Link>
+            <Link to="/product-package-builder">
+              <Button variant={pathname === "/product-package-builder" ? "secondary" : "ghost"} size="sm">Package Builder</Button>
+            </Link>
             <Link to="/dashboard">
               <Button size="sm" className={cn("ml-2 bg-accent text-accent-foreground hover:bg-accent/90")}>
                 Try the Tool
